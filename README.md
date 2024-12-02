@@ -27,6 +27,55 @@
   - DAO와 VO 클래스를 활용한 모듈화 및 재사용성 높은 구조.  
   - 사용자 리뷰 및 평점 기능 등 추가 기능을 쉽게 확장 가능.
 
+- **펑션, 트리거, 프로시저 소개**
+  - ID 자동 생성 트리거
+ ```
+CREATE OR REPLACE TRIGGER USER_ID_TRIGGER
+BEFORE INSERT ON Users
+FOR EACH ROW
+BEGIN
+    IF :NEW.user_id IS NULL THEN
+        :NEW.user_id := 'USER' || TO_CHAR(USER_ID_SEQ.NEXTVAL, 'FM0000');
+    END IF;
+END;
+/
+```
+ - 패스워드 찾기 펑션
+```
+CREATE OR REPLACE FUNCTION FIND_PASSWORD_FUNC (
+    p_user_id IN VARCHAR2,
+    p_email IN VARCHAR2
+) RETURN VARCHAR2
+AS
+    v_password VARCHAR2(255);
+BEGIN
+    SELECT password
+    INTO v_password
+    FROM Users
+    WHERE user_id = p_user_id
+      AND email = p_email;
+    RETURN v_password;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN '존재하지 않는 사용자 입니다';
+END;
+/
+```
+ - 장르별 영화 찾기 프로시저
+```
+CREATE OR REPLACE PROCEDURE list_movies_by_genre (
+    p_genre IN VARCHAR2,
+    p_cursor OUT SYS_REFCURSOR
+) IS
+BEGIN
+    OPEN p_cursor FOR
+        SELECT title, release_date, duration
+        FROM Movies
+        WHERE genre = p_genre;
+END;
+/
+```
+
 ---
 
 ## 🚀 **사용 기술**  
